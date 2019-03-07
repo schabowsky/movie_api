@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from urllib.request import urlopen
 from django.db.models import Count
+from datetime import datetime
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -92,7 +93,18 @@ class Top(APIView):
         """
         Return a list of top movies.
         """
-        comments = Comment.objects.all().values('movie_id').annotate(comment_count=Count('movie_id')).order_by('-comment_count')
+        start_date = request.query_params.get('start_date')
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        else:
+            start_date = datetime(1970, 1, 1)
+        end_date = request.query_params.get('end_date')
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        else:
+            end_date = datetime.now()
+
+        comments = Comment.objects.filter(ts__range=(start_date, end_date)).values('movie_id').annotate(comment_count=Count('movie_id')).order_by('-comment_count')
 
         rank = 0
         count = -1

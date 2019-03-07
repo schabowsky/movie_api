@@ -1,6 +1,6 @@
 import os
 
-from settings.secret_settings import DEFAULT_DATABASE
+import settings.secret_settings as secret_settings
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -10,12 +10,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'b_#9$4m$7gn2t6d1q7an_c%g)jp4!fb=op9@u!*+%)$dn6=+gi'
+SECRET_KEY = secret_settings.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.104']
+ALLOWED_HOSTS = ['192.168.0.104', '192.168.0.105']
 
 
 # Application definition
@@ -70,7 +70,7 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     # }
-    'default': DEFAULT_DATABASE,
+    'default': secret_settings.DEFAULT_DATABASE,
 }
 
 
