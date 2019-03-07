@@ -13,6 +13,8 @@ from .serializers import (MovieRequestSerializer, MovieSerializer,
     CommentRequestSerializer, CommentSerializer)
 from settings.secret_settings import API_KEY
 
+OMDB_URL = 'http://www.omdbapi.com/?t={}&apikey={}'
+
 
 class Movies(APIView):
     authentication_classes = []
@@ -36,7 +38,7 @@ class Movies(APIView):
             title = '+'.join(title)
             if not Movie.objects.filter(title__iexact=title):
                 try:
-                    data = urlopen('http://www.omdbapi.com/?t={}&apikey={}'.format(title, API_KEY))
+                    data = urlopen(OMDB_URL.format(title, API_KEY))
                     json_data = JSONParser().parse(data)
                 except Exception as inst:
                     pass
@@ -82,7 +84,9 @@ class Comments(APIView):
                         return Response(comment)
             except ValueError:
                 error = {'Error': 'Wrong movie_id'}
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            error = {'Error': 'Wrong JSON format'}
+        return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Top(APIView):
@@ -104,14 +108,21 @@ class Top(APIView):
         else:
             end_date = datetime.now()
 
-        comments = Comment.objects.filter(ts__range=(start_date, end_date)).values('movie_id').annotate(comment_count=Count('movie_id')).order_by('-comment_count')
+        movies = Movie.objects.all().values_list('id', flat=True)
+        comments = Comment.objects.filter(movie_id__in=movies, ts__range=(start_date, end_date)).values('movie_id').annotate(comment_count=Count('movie_id')).order_by('-comment_count')
+        result = []
+        for m in movies:
+            if m not in comments.values_list('movie_id', flat=True):
+                result.append({'movie_id': m, 'comment_count': 0})
+            else:
+                result.append(comments.get(movie_id=m))
 
         rank = 0
         count = -1
-        for c in comments:
-            if count != c['comment_count']:
+        for r in result:
+            if count != r['comment_count']:
                 rank += 1
-            c['rank'] = rank
-            count = c['comment_count']
+            r['rank'] = rank
+            count = r['comment_count']
 
-        return Response(comments)
+        return Response(result)

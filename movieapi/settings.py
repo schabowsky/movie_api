@@ -15,7 +15,7 @@ SECRET_KEY = secret_settings.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.104', '192.168.0.105']
+ALLOWED_HOSTS = ['192.168.0.104', '192.168.0.105', '192.168.0.106']
 
 
 # Application definition
